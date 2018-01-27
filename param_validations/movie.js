@@ -14,7 +14,7 @@ module.exports = {
     query: {
       filter: Joi.object(),
       limit: Joi.number().integer(),
-      offset: Joi.number().integer()
+      page: Joi.number().integer()
     },
   },
 };

@@ -6,17 +6,18 @@ const MovieController = {
   readAll(req, res, next) {
     const filter = req.query.filter || {};
     const limit = req.query.limit !== undefined ? parseInt(req.query.limit, 10) : 10;
-    const offset = req.query.offset !== undefined ? parseInt(req.query.offset, 10) : 0;
+    const page = req.query.page !== undefined ? parseInt(req.query.page, 10) : 1;
+    const offset = (page - 1) * limit;
     // TODO: Add redis cache
     Movie.find(filter)
       .skip(offset)
       .limit(limit)
       .then(movies => res.json({
         movies,
-        offset,
+        page,
+        count: movies.length,
         limit,
-        count: movies.length
-        // nextPage and previousPage maybe
+        // totalPages ?
       }))
       .catch(next);
   },
