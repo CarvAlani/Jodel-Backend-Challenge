@@ -9,6 +9,7 @@ const cors = require('cors');
 const middlewares = require('./helpers/middlewares');
 const config = require('./config');
 const routes = require('./routes');
+const { client } = require('./helpers/redis');
 
 const app = express();
 
@@ -62,6 +63,21 @@ mongoose.connect(querystring)
     console.error(err); // eslint-disable-line no-console
     return Promise.reject(new Error(`Unable to connect to database: ${querystring}`));
   });
+
+client.on('connect', () => {
+  console.log('Connected to redis server'); // eslint-disable-line no-console
+});
+
+client.config('set', 'maxmemory', config.redis.maxMemory)
+  .then(() => client.config('set', 'maxmemory-policy', 'allkeys-lru'))
+  .then(() => client.config('get', 'maxmemory'))
+  .then(console.log) // eslint-disable-line no-console
+  .catch(err => console.error(err)); // eslint-disable-line no-console
+
+client.on('error', (err) => {
+  console.error(err); // eslint-disable-line no-console
+  return Promise.reject(new Error('Unable to connect to redis'));
+});
 
 if (!module.parent) {
   app.listen(config.port, () => {
