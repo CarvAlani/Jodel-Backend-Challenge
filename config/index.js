@@ -12,6 +12,8 @@ const envVarsSchema = Joi.object({
     .default(''),
   PORT: Joi.number()
     .default(3000),
+  REDIS_HOST: Joi.string()
+    .required(),
   MONGO_HOST: Joi.string()
     .description('Mongo DB host url')
     .required(),
@@ -28,6 +30,9 @@ const config = {
   port: envVars.PORT,
   mongo: {
     host: envVars.MONGO_HOST,
+  },
+  redis: {
+    host: envVars.REDIS_HOST,
   },
   basePath: envVars.BASE_PATH,
   proxyPath: envVars.PROXY_PATH
