@@ -17,10 +17,12 @@ const MovieSchema = new Schema({
     type: String
   },
   year: {
-    type: Number
+    type: String
+  },
+  createdAt: {
+    type: String,
+    default: Date.now
   }
-}, {
-  timestamps: true
 });
 
 module.exports = mongoose.model('Movie', MovieSchema);
