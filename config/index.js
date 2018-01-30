@@ -14,6 +14,8 @@ const envVarsSchema = Joi.object({
     .default(3000),
   REDIS_HOST: Joi.string()
     .required(),
+  REDIS_MAX_MEMORY: Joi.number()
+    .default(0),
   MONGO_HOST: Joi.string()
     .description('Mongo DB host url')
     .required(),
@@ -33,6 +35,7 @@ const config = {
   },
   redis: {
     host: envVars.REDIS_HOST,
+    maxMemory: envVars.REDIS_MAX_MEMORY,
   },
   basePath: envVars.BASE_PATH,
   proxyPath: envVars.PROXY_PATH
