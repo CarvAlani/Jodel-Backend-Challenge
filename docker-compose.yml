@@ -6,6 +6,8 @@ services:
       - "3000:3000"
     environment:
       MONGO_HOST: "mongodb://mongo:27017/movies-api"
+      REDIS_HOST: "redis://redis:6379/0"
+      REDIS_MAX_MEMORY: "102400000"
     restart: on-failure
     depends_on:
       - mongo
@@ -22,7 +24,7 @@ services:
   redis:
     image: redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis-volume:/data
 volumes:
