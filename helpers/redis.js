@@ -3,7 +3,7 @@ const config = require('../config');
 const utils = require('../helpers/utils');
 const Promise = require('bluebird');
 
-const client = redis.createClient(config.redis.host);
+const client = redis.createClient(`${config.redis.host}${config.redis.index}`);
 
 const addObjectToSets = (movie, extraGroupName) => {
   const movieCopy = Object.assign({}, movie);

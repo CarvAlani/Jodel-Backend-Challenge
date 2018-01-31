@@ -50,7 +50,7 @@ if (config.env !== 'test') {
 
 app.use(middlewares.addTrace);
 
-const querystring = config.mongo.host;
+const querystring = `${config.mongo.host}${config.mongo.name}`;
 
 mongoose.models = {};
 mongoose.modelSchemas = {};
