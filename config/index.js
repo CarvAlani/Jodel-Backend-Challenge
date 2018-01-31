@@ -16,9 +16,14 @@ const envVarsSchema = Joi.object({
     .required(),
   REDIS_MAX_MEMORY: Joi.number()
     .default(0),
+  REDIS_DB_INDEX: Joi.string()
+    .default('0'),
   MONGO_HOST: Joi.string()
     .description('Mongo DB host url')
     .required(),
+  MONGO_DB_NAME: Joi.string()
+    .description('Mongo DB host name')
+    .default('movies-api'),
 }).unknown()
   .required();
 
@@ -32,9 +37,11 @@ const config = {
   port: envVars.PORT,
   mongo: {
     host: envVars.MONGO_HOST,
+    name: envVars.MONGO_DB_NAME
   },
   redis: {
     host: envVars.REDIS_HOST,
+    index: envVars.REDIS_DB_INDEX,
     maxMemory: envVars.REDIS_MAX_MEMORY,
   },
   basePath: envVars.BASE_PATH,
