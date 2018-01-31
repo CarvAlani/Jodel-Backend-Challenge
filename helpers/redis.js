@@ -5,22 +5,25 @@ const Promise = require('bluebird');
 
 const client = redis.createClient(config.redis.host);
 
-const addObjectToSets = (movie) => {
+const addObjectToSets = (movie, extraGroupName) => {
   const movieCopy = Object.assign({}, movie);
   const id = movieCopy._id.toString();
   movieCopy._id = undefined;
   client.sadd('movies', id);
+  if (extraGroupName) {
+    client.sadd(extraGroupName, id);
+  }
   const keyValues = utils.objectToKeyValueString(movieCopy);
   return Promise.map(keyValues, (keyValue) => {
     client.sadd(keyValue, id);
   });
 };
 
-const cache = (movie) => {
+const cache = (movie, extraGroupName) => {
   const movieCopy = Object.assign({}, movie);
   movieCopy._id = movieCopy._id.toString();
   return client.HMSET(movieCopy._id, movieCopy)
-    .then(() => addObjectToSets(movieCopy))
+    .then(() => addObjectToSets(movieCopy, extraGroupName))
     .then(() => Promise.resolve(movieCopy));
 };
 
@@ -33,8 +36,7 @@ module.exports = {
   getCached: filtersName => getMembers(filtersName)
     .then(movies => Promise.mapSeries(movies, movie => client.hgetall(movie))),
   addToCache: (movies, filter, filtersName) =>
-    Promise.mapSeries(movies, movie => cache(movie.toObject()))
-      .then(() => client.sinterstore(filtersName, filter)),
+    Promise.mapSeries(movies, movie => cache(movie.toObject(), filtersName)),
   isCached: filtersName =>
     getMembers(filtersName)
       .then(members => members.length > 0),
