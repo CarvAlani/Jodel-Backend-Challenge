@@ -1,5 +1,7 @@
-const bodyParser = require('body-parser');
 const expressWinston = require('express-winston');
+const swaggerTools = require('swagger-tools');
+const swaggerDoc = require('swagger-jsdoc');
+const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const Promise = require('bluebird');
 const express = require('express');
@@ -22,6 +24,21 @@ const winstonInstance = new (winston.Logger)({
   ]
 });
 
+const spec = swaggerDoc({
+  swaggerDefinition: {
+    info: {
+      title: 'Movies api',
+      version: '0.0.1',
+    },
+    basePath: config.basePath,
+  },
+  apis: [
+    'routes/**/*.js',
+    'models/**/*.js',
+    'controllers/**/*.js',
+  ],
+});
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -38,51 +55,58 @@ if (config.env === 'development') {
   }));
 }
 
-app.use(config.basePath, routes);
-app.use(middlewares.convertToApiError);
-app.use(middlewares.notFound);
-// log error in winston transports except when executing test suite
-if (config.env !== 'test') {
-  app.use(expressWinston.errorLogger({
-    winstonInstance
+swaggerTools.initializeMiddleware(spec, (middleware) => {
+  app.use(config.basePath, routes);
+  app.use(middleware.swaggerUi({
+    apiDocs: `${config.basePath}docs.json`,
+    swaggerUi: `${config.basePath}docs`,
+    apiDocsPrefix: config.proxyPath,
+    swaggerUiPrefix: config.proxyPath,
   }));
-}
+  app.use(middlewares.convertToApiError);
+  app.use(middlewares.notFound);
+  // log error in winston transports except when executing test suite
+  if (config.env !== 'test') {
+    app.use(expressWinston.errorLogger({
+      winstonInstance
+    }));
+  }
 
-app.use(middlewares.addTrace);
+  app.use(middlewares.addTrace);
 
-const querystring = `${config.mongo.host}${config.mongo.name}`;
+  const querystring = `${config.mongo.host}${config.mongo.name}`;
 
-mongoose.models = {};
-mongoose.modelSchemas = {};
+  mongoose.models = {};
+  mongoose.modelSchemas = {};
 
-mongoose.Promise = Promise;
+  mongoose.Promise = Promise;
 
-mongoose.connect(querystring)
-  .then(({ connections }) => console.log(`Connected to Mongo server in ${connections[0].name}`)) // eslint-disable-line no-console
-  .catch((err) => {
+  mongoose.connect(querystring)
+    .then(({ connections }) => console.log(`Connected to Mongo server in ${connections[0].name}`)) // eslint-disable-line no-console
+    .catch((err) => {
+      console.error(err); // eslint-disable-line no-console
+      return Promise.reject(new Error(`Unable to connect to database: ${querystring}`));
+    });
+
+  client.on('connect', () => {
+    console.log('Connected to redis server'); // eslint-disable-line no-console
+  });
+
+  client.config('set', 'maxmemory', config.redis.maxMemory)
+    .then(() => client.config('set', 'maxmemory-policy', 'allkeys-lru'))
+    .then(() => client.config('get', 'maxmemory'))
+    .then(console.log) // eslint-disable-line no-console
+    .catch(err => console.error(err)); // eslint-disable-line no-console
+
+  client.on('error', (err) => {
     console.error(err); // eslint-disable-line no-console
-    return Promise.reject(new Error(`Unable to connect to database: ${querystring}`));
+    return Promise.reject(new Error('Unable to connect to redis'));
   });
 
-client.on('connect', () => {
-  console.log('Connected to redis server'); // eslint-disable-line no-console
+  if (!module.parent) {
+    app.listen(config.port, () => {
+      console.info(`API started on port ${config.port} (${config.env})`); // eslint-disable-line no-console
+    });
+  }
 });
-
-client.config('set', 'maxmemory', config.redis.maxMemory)
-  .then(() => client.config('set', 'maxmemory-policy', 'allkeys-lru'))
-  .then(() => client.config('get', 'maxmemory'))
-  .then(console.log) // eslint-disable-line no-console
-  .catch(err => console.error(err)); // eslint-disable-line no-console
-
-client.on('error', (err) => {
-  console.error(err); // eslint-disable-line no-console
-  return Promise.reject(new Error('Unable to connect to redis'));
-});
-
-if (!module.parent) {
-  app.listen(config.port, () => {
-    console.info(`API started on port ${config.port} (${config.env})`); // eslint-disable-line no-console
-  });
-}
-
 module.exports = app;
