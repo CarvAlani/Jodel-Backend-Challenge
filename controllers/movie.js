@@ -7,6 +7,80 @@ const utils = require('../helpers/utils');
 const Promise = require('bluebird');
 
 const MovieController = {
+  /**
+  * @swagger
+  * /movies:
+  *   get:
+  *     tags:
+  *       - Movies
+  *     description: Returns all movies
+  *     produces:
+  *       - application/json
+  *     parameters:
+  *       - name: limit
+  *         description: Return limit
+  *         in: query
+  *         required: false
+  *         type: integer
+  *       - name: page
+  *         description: Return page
+  *         in: query
+  *         required: false
+  *         type: integer
+  *       - name: filter[title]
+  *         description: Filter by title
+  *         in: query
+  *         required: false
+  *         type: string
+  *       - name: filter[description]
+  *         description: Filter by description
+  *         in: query
+  *         required: false
+  *         type: string
+  *       - name: filter[genre]
+  *         description: Filter by genre
+  *         in: query
+  *         required: false
+  *         type: string
+  *       - name: filter[director]
+  *         description: Filter by director
+  *         in: query
+  *         required: false
+  *         type: string
+  *     responses:
+  *       200:
+  *         description: An array of movies
+  *         schema:
+  *           properties:
+  *             docs:
+  *               type: array
+  *               items:
+  *                 allOf:
+  *                   - $ref: '#/definitions/Movies'
+  *                   - properties:
+  *                       id:
+  *                         type: string
+  *                       _id:
+  *                         type: string
+  *                       title:
+  *                         type: string
+  *                       description:
+  *                         type: string
+  *                       genre:
+  *                         type: string
+  *                       director:
+  *                         type: string
+  *                       year:
+  *                         type: string
+  *                       createdAt:
+  *                         type: string
+  *             count:
+  *               type: integer
+  *             limit:
+  *               type: integer
+  *             page:
+  *               type: integer
+  */
   readAll(req, res, next) {
     const filter = req.query.filter || {};
     const filterArray = utils.objectToKeyValueString(req.query.filter);
@@ -26,6 +100,58 @@ const MovieController = {
       }))
       .catch(next);
   },
+  /**
+  * @swagger
+  * /movies:
+  *   post:
+  *     tags:
+  *       - Movies
+  *     description: Creates a movie
+  *     produces:
+  *       - application/json
+  *     parameters:
+  *       - name: movie
+  *         description: Movie object
+  *         in: body
+  *         required: true
+  *         schema:
+  *           allOf:
+  *              - $ref: '#/definitions/Movies'
+  *              - properties:
+  *                  title:
+  *                    type: string
+  *                  description:
+  *                    type: string
+  *                  genre:
+  *                    type: string
+  *                  director:
+  *                    type: string
+  *                  year:
+  *                    type: string
+  *                required:
+  *                  - title
+  *     responses:
+  *       200:
+  *         description: Successfully created
+  *         schema:
+  *           allOf:
+  *              - $ref: '#/definitions/Movies'
+  *              - properties:
+  *                  _id:
+  *                    type: string
+  *                  title:
+  *                    type: string
+  *                  description:
+  *                    type: string
+  *                  genre:
+  *                    type: string
+  *                  director:
+  *                    type: string
+  *                  year:
+  *                    type: string
+  *                  createdAt:
+  *                    type: string
+  */
   create(req, res, next) {
     Movie.findOne({
       title: req.body.title,
