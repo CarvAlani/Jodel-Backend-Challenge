@@ -47,6 +47,11 @@ const MovieController = {
   *         in: query
   *         required: false
   *         type: string
+  *       - name: filter[year]
+  *         description: Filter by year
+  *         in: query
+  *         required: false
+  *         type: string
   *     responses:
   *       200:
   *         description: An array of movies
@@ -159,8 +164,8 @@ const MovieController = {
       .then((movie) => {
         if (!movie) {
           return Movie.create(req.body)
-            .then(newMovie => res.json(newMovie))
-            .then(() => client.flushdb) // remove only specific smembers from new object
+            .then(newMovie => res.status(httpStatus.CREATED).json(newMovie))
+            .then(() => client.flushdb) // TODO: remove only specific smembers from new object
             .catch(next);
         }
         return Promise.reject(new APIError(
