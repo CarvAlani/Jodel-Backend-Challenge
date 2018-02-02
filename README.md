@@ -57,8 +57,10 @@ choosing consistency over fast results.
 
 ## Tests
 
-Tests are done using [Mocha](https://mochajs.org/) just by running the command `npm run test`
-or `MONGO_DB_NAME=movies-api-test REDIS_DB_INDEX=1 docker-compose run web yarn test`
+Tests are done using [Mocha](https://mochajs.org/). A mix of unit tests and E2E tests, using 
+scenarios when creating, querying and making sure that the queries are correct. Test can be executed
+just by running the command `npm run test` or
+`MONGO_DB_NAME=movies-api-test REDIS_DB_INDEX=1 docker-compose run web yarn test`
 
 ## Documentation
 
